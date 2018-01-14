@@ -31,10 +31,13 @@ public class CustomView extends FrameLayout implements ViewPager.OnPageChangeLis
     private View mIndicator;
 
     private int chatShiftTranslationX;
+
+    private int mIndicatorTranslation;
     ArgbEvaluator evaluator;
     private int mCenterColor;
     private int mSideColor;
 
+    private int mTranslationY;
     int currentPadding;
 
     public CustomView(@NonNull Context context) {
@@ -53,8 +56,23 @@ public class CustomView extends FrameLayout implements ViewPager.OnPageChangeLis
 
     }
 
-    public void setUpWithViewPager(ViewPager pager) {
+    public void setUpWithViewPager(final ViewPager pager) {
         pager.addOnPageChangeListener(this);
+
+        mChatImage.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (pager.getCurrentItem() != 0)
+                    pager.setCurrentItem(0);
+            }
+        });
+        mStoryImage.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (pager.getCurrentItem() != 2)
+                    pager.setCurrentItem(2);
+            }
+        });
     }
 
     public void initView() {
@@ -73,27 +91,50 @@ public class CustomView extends FrameLayout implements ViewPager.OnPageChangeLis
         mCenterColor = ContextCompat.getColor(getContext(), R.color.white);
 
 
-        currentPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 88, getResources().getDisplayMetrics());
+        //indicator should be moving further
+
+        mIndicatorTranslation = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 88, getResources().getDisplayMetrics());
         mGalleryImage.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                chatShiftTranslationX = (int) (mGalleryImage.getX() - mChatImage.getX()) - currentPadding;
+                chatShiftTranslationX = (int) (mGalleryImage.getX() - mChatImage.getX()) - mIndicatorTranslation;
                 mGalleryImage.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                mTranslationY = getHeight() - mGalleryImage.getBottom();
             }
         });
 
 
     }
 
+    private void moveViews(float moveFromCenter) {
+        mChatImage.setTranslationX(moveFromCenter * chatShiftTranslationX);
+        mStoryImage.setTranslationX(-moveFromCenter * chatShiftTranslationX);
+        // mIndicator.setTranslationX(moveFromCenter*mIndicatorTranslation);
+
+        mIndicator.setAlpha(moveFromCenter);
+        mIndicator.setScaleX(moveFromCenter);
+    }
+
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
         if (position == 0) {
-            Log.e("Page", String.valueOf(0));
+
             setColor(1 - positionOffset);
+
+            moveViews(1 - positionOffset);
+
+            mIndicator.setTranslationX((positionOffset - 1) * mIndicatorTranslation);
+            moveAndScaleCenterViewTranslation(1 - positionOffset);
+
         } else if (position == 1) {
-            Log.e("Page", String.valueOf(0));
+
             setColor(positionOffset);
+
+            moveViews(positionOffset);
+            mIndicator.setTranslationX(positionOffset * mIndicatorTranslation);
+            moveAndScaleCenterViewTranslation(positionOffset);
         }
     }
 
@@ -114,6 +155,21 @@ public class CustomView extends FrameLayout implements ViewPager.OnPageChangeLis
         mChatImage.setColorFilter(color);
         mStoryImage.setColorFilter(color);
         mCameraImage.setColorFilter(color);
+        mIndicator.setBackgroundColor(color);
+        mGalleryImage.setAlpha(1-fractionFromCenter);
     }
+
+    private void moveAndScaleCenterViewTranslation(float centerScale) {
+
+        float scale = .7f + ((1-centerScale) * 0.3f);
+        mCameraImage.setScaleX(scale);
+        mCameraImage.setScaleY(scale);
+//
+        int translation = (int) (centerScale * mTranslationY);
+        mCameraImage.setTranslationY(translation);
+        mGalleryImage.setTranslationY(translation);
+
+    }
+
 
 }

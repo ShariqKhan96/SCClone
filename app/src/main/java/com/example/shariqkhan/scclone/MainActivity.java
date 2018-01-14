@@ -43,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
         CustomView customView = findViewById(R.id.my_custom_tabs);
         customView.setUpWithViewPager(pager);
 
+        pager.setCurrentItem(1);
+
 
         //    evaluator = new ArgbEvaluator();
 
@@ -74,16 +76,11 @@ public class MainActivity extends AppCompatActivity {
                     background.setAlpha(1 - positionOffset);
 
 
-                    //        setColor(1 - positionOffset);
-
-
                 } else if (position == 1) {
 
                     background.setBackgroundColor(colorPurple);
                     background.setAlpha(positionOffset);
 
-
-                    //     setColor(positionOffset);
                 }
 
             }
